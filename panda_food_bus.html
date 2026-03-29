@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panda Food Bus — It's a Vibe on Wheels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #050508;
+    --deep: #0d0a14;
+    --card: #12101a;
+    --glass: rgba(255,255,255,0.04);
+    --pink: #ff2d78;
+    --pink-glow: #ff2d7850;
+    --gold: #f5c842;
+    --purple: #7c3aed;
+    --white: #f0eeff;
+    --muted: #6b6880;
+    --border: rgba(245,200,66,0.15);
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ---- CURSOR ---- */
+  #cursor {
+    position: fixed; width:14px; height:14px; border-radius:50%;
+    background: var(--pink); mix-blend-mode:screen;
+    pointer-events:none; z-index:9999;
+    transition: transform .15s ease, opacity .15s;
+    transform: translate(-50%,-50%);
+  }
+  #cursor-ring {
+    position:fixed; width:36px; height:36px; border-radius:50%;
+    border:1.5px solid var(--gold); pointer-events:none; z-index:9998;
+    transform:translate(-50%,-50%); transition:all .3s cubic-bezier(.17,.67,.53,1.3);
+  }
+
+  /* ---- NAVBAR ---- */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    padding:18px 5%;
+    display:flex; align-items:center; justify-content:space-between;
+    transition: all .4s;
+    backdrop-filter: blur(0px);
+  }
+  nav.scrolled {
+    background: rgba(5,5,8,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding:12px 5%;
+  }
+  .nav-logo {
+    font-family:'Playfair Display',serif;
+    font-size:1.4rem; font-weight:900;
+    background: linear-gradient(135deg, var(--gold), var(--pink));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    letter-spacing:.03em;
+  }
+  .nav-links { display:flex; gap:2rem; list-style:none; }
+  .nav-links a {
+    text-decoration:none; color:var(--muted); font-size:.875rem;
+    font-weight:500; letter-spacing:.08em; text-transform:uppercase;
+    transition: color .3s;
+  }
+  .nav-links a:hover { color:var(--gold); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--pink), #a855f7);
+    color:white; border:none; padding:10px 22px;
+    border-radius:50px; font-family:'DM Sans',sans-serif;
+    font-weight:600; font-size:.85rem; cursor:none;
+    transition: transform .3s, box-shadow .3s;
+    text-decoration:none;
+  }
+  .nav-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--pink-glow);
+  }
+  .hamburger { display:none; flex-direction:column; gap:5px; cursor:none; }
+  .hamburger span { width:24px; height:2px; background:var(--white); border-radius:2px; transition:.3s; }
+
+  /* ---- HERO ---- */
+  #hero {
+    height: 100vh; min-height:700px;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    text-align:center; position:relative; overflow:hidden;
+    padding: 0 5%;
+  }
+  .hero-bg {
+    position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 80%, rgba(255,45,120,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(124,58,237,0.15) 0%, transparent 60%),
+      linear-gradient(180deg, #050508 0%, #0d0a14 50%, #050508 100%);
+  }
+  .hero-grid {
+    position:absolute; inset:0;
+    background-image: linear-gradient(rgba(245,200,66,0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(245,200,66,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  }
+  .hero-bus-svg {
+    position:absolute; bottom:-20px; left:50%; transform:translateX(-50%);
+    width: min(900px, 120vw); opacity:.12;
+  }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background: rgba(245,200,66,0.08); border:1px solid rgba(245,200,66,0.25);
+    border-radius:50px; padding:6px 18px; font-size:.78rem;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--gold);
+    margin-bottom:2rem; opacity:0; animation: fadeUp .8s .2s forwards;
+  }
+  .hero-badge::before { content:'🐼'; font-size:1rem; }
+  .hero-h1 {
+    font-family:'Playfair Display',serif;
+    font-size: clamp(2.8rem, 7vw, 6rem);
+    font-weight:900; line-height:1.05;
+    opacity:0; animation: fadeUp .9s .4s forwards;
+  }
+  .hero-h1 em {
+    font-style:normal;
+    background: linear-gradient(135deg, var(--pink) 20%, var(--gold) 80%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .hero-sub {
+    font-size:clamp(1rem, 2vw, 1.25rem); color: var(--muted);
+    margin:1.5rem 0 2.5rem; font-weight:300; letter-spacing:.03em;
+    opacity:0; animation: fadeUp .9s .6s forwards;
+  }
+  .hero-btns {
+    display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;
+    opacity:0; animation: fadeUp .9s .8s forwards;
+  }
+  .btn-primary {
+    display:flex; align-items:center; gap:8px;
+    background: linear-gradient(135deg, var(--pink), #c026d3);
+    color:white; text-decoration:none; padding:14px 30px;
+    border-radius:50px; font-weight:600; font-size:.95rem;
+    box-shadow: 0 0 30px var(--pink-glow);
+    transition: all .35s; border:none; cursor:none;
+  }
+  .btn-primary:hover { transform:translateY(-3px); box-shadow:0 0 50px var(--pink-glow); }
+  .btn-outline {
+    display:flex; align-items:center; gap:8px;
+    background: transparent; color:var(--gold);
+    border:1.5px solid var(--gold); text-decoration:none;
+    padding:14px 30px; border-radius:50px;
+    font-weight:600; font-size:.95rem;
+    transition: all .35s; cursor:none;
+  }
+  .btn-outline:hover { background: rgba(245,200,66,0.08); transform:translateY(-3px); }
+  .scroll-hint {
+    position:absolute; bottom:2rem; left:50%; transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    color:var(--muted); font-size:.7rem; letter-spacing:.15em; text-transform:uppercase;
+    opacity:0; animation: fadeIn 1s 1.5s forwards;
+  }
+  .scroll-line {
+    width:1px; height:50px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* ---- SECTION COMMONS ---- */
+  section { padding: 100px 5%; }
+  .section-label {
+    display:inline-block; font-size:.72rem; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--pink);
+    background: rgba(255,45,120,.08); border:1px solid rgba(255,45,120,.2);
+    padding:4px 14px; border-radius:50px; margin-bottom:1rem;
+  }
+  .section-title {
+    font-family:'Playfair Display',serif;
+    font-size:clamp(2rem,4vw,3rem); font-weight:900; line-height:1.1;
+  }
+  .section-title span {
+    background: linear-gradient(135deg, var(--gold), var(--pink));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .section-sub { color:var(--muted); font-size:1rem; margin-top:.75rem; max-width:500px; }
+  .reveal { opacity:0; transform:translateY(40px); transition: all .8s cubic-bezier(.17,.67,.4,1); }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* ---- STORY ---- */
+  #story { background: var(--deep); position:relative; overflow:hidden; }
+  .story-inner {
+    display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:center;
+    max-width:1200px; margin:0 auto;
+  }
+  .story-visual {
+    position:relative; border-radius:24px; overflow:hidden;
+    aspect-ratio:4/5;
+    background: linear-gradient(135deg, #1a0d2e, #0d1a2e);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .story-visual::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at bottom, rgba(255,45,120,.3) 0%, transparent 60%);
+  }
+  .story-panda-emoji { font-size:10rem; filter:drop-shadow(0 0 40px var(--pink-glow)); }
+  .story-frame {
+    position:absolute; inset:0; border:1px solid rgba(245,200,66,.15); border-radius:24px;
+    pointer-events:none;
+  }
+  .story-tag {
+    position:absolute; bottom:-1px; left:-1px; right:-1px;
+    background: linear-gradient(to top, rgba(13,10,20,.95), transparent);
+    padding:2rem 2rem 1.5rem;
+    font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--gold);
+  }
+  .story-text { }
+  .story-text p {
+    color:#b8b3cc; line-height:1.85; margin-top:1.5rem; font-size:1.05rem;
+  }
+  .story-stats {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:3rem;
+  }
+  .stat { text-align:center; padding:1.5rem 1rem; background:var(--glass);
+    border:1px solid var(--border); border-radius:16px; backdrop-filter:blur(10px); }
+  .stat-num {
+    font-family:'Playfair Display',serif; font-size:2.2rem; font-weight:900;
+    background:linear-gradient(135deg,var(--gold),var(--pink));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .stat-label { font-size:.75rem; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-top:.25rem; }
+
+  /* ---- MENU ---- */
+  #menu { background:var(--black); }
+  .menu-header { text-align:center; max-width:600px; margin:0 auto 3.5rem; }
+  .menu-header .section-sub { margin:0 auto; margin-top:.75rem; }
+  .menu-tabs {
+    display:flex; gap:.75rem; flex-wrap:wrap; justify-content:center; margin-bottom:3rem;
+  }
+  .tab-btn {
+    padding:9px 20px; border-radius:50px; border:1px solid var(--border);
+    background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif;
+    font-size:.85rem; font-weight:500; cursor:none; transition:all .3s;
+  }
+  .tab-btn.active, .tab-btn:hover {
+    background: linear-gradient(135deg,var(--pink),#a855f7);
+    color:white; border-color:transparent;
+    box-shadow: 0 0 20px rgba(255,45,120,.3);
+  }
+  .menu-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:1.25rem; max-width:1200px; margin:0 auto;
+  }
+  .menu-card {
+    background: var(--card); border:1px solid rgba(255,255,255,.06);
+    border-radius:20px; padding:1.5rem; position:relative; overflow:hidden;
+    transition: all .35s; cursor:none;
+    display:none;
+  }
+  .menu-card.active-cat { display:block; }
+  .menu-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg,var(--pink),var(--gold),var(--purple));
+    opacity:0; transition:.3s;
+  }
+  .menu-card:hover {
+    transform:translateY(-6px);
+    border-color:rgba(245,200,66,.2);
+    box-shadow: 0 20px 50px rgba(0,0,0,.5);
+  }
+  .menu-card:hover::before { opacity:1; }
+  .card-icon { font-size:2.5rem; margin-bottom:1rem; display:block; }
+  .card-name { font-weight:600; font-size:1rem; color:var(--white); }
+  .card-price {
+    font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700;
+    color:var(--gold); margin-top:.5rem;
+  }
+  .card-badge {
+    position:absolute; top:1rem; right:1rem;
+    font-size:.65rem; letter-spacing:.1em; text-transform:uppercase;
+    background:rgba(255,45,120,.15); color:var(--pink);
+    border:1px solid rgba(255,45,120,.25); border-radius:50px; padding:3px 10px;
+  }
+
+  /* ---- MEALS ---- */
+  #meals { background:var(--deep); overflow:hidden; }
+  .meals-header { text-align:center; margin-bottom:4rem; }
+  .meals-grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:1.5rem; max-width:1200px; margin:0 auto;
+  }
+  .meal-card {
+    position:relative; padding:2.5rem 2rem; border-radius:24px;
+    background: var(--card); overflow:hidden; cursor:none;
+    transition:all .4s;
+  }
+  .meal-card::after {
+    content:''; position:absolute; inset:0; border-radius:24px;
+    border:1.5px solid transparent;
+    background: linear-gradient(135deg,var(--gold),var(--pink),var(--purple)) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:destination-out; mask-composite:exclude;
+    opacity:0; transition:.4s;
+  }
+  .meal-card:hover { transform:translateY(-8px); }
+  .meal-card:hover::after { opacity:1; }
+  .meal-glow {
+    position:absolute; top:-40px; right:-40px; width:120px; height:120px;
+    border-radius:50%; filter:blur(50px); opacity:.4;
+  }
+  .meal-emoji { font-size:3rem; margin-bottom:1.5rem; display:block; }
+  .meal-name {
+    font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700;
+    color:var(--white); margin-bottom:.5rem;
+  }
+  .meal-desc { color:var(--muted); font-size:.9rem; line-height:1.7; margin-bottom:1.5rem; }
+  .meal-price {
+    font-family:'Playfair Display',serif; font-size:2rem; font-weight:900;
+    background:linear-gradient(135deg,var(--gold),var(--pink));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .meal-tag {
+    display:inline-block; margin-top:1rem;
+    font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+    background:rgba(245,200,66,.08); color:var(--gold); border:1px solid rgba(245,200,66,.2);
+    border-radius:50px; padding:4px 12px;
+  }
+
+  /* ---- GALLERY ---- */
+  #gallery { background:var(--black); }
+  .gallery-header { text-align:center; margin-bottom:3rem; }
+  .gallery-grid {
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto;
+    gap:1rem; max-width:1200px; margin:0 auto;
+  }
+  .g-item {
+    border-radius:16px; overflow:hidden; position:relative; cursor:none;
+    background: var(--card);
+    transition: transform .4s;
+  }
+  .g-item:hover { transform:scale(1.02); z-index:2; }
+  .g-item:nth-child(1) { grid-column:1/3; }
+  .g-item:nth-child(4) { grid-column:2/4; }
+  .g-inner {
+    width:100%; padding-bottom:70%; position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .g-item:nth-child(1) .g-inner,
+  .g-item:nth-child(4) .g-inner { padding-bottom:45%; }
+  .g-emoji {
+    position:absolute; font-size:clamp(4rem, 8vw, 8rem);
+    opacity:.5; transform:scale(1); transition:.4s;
+  }
+  .g-item:hover .g-emoji { transform:scale(1.2); opacity:.7; }
+  .g-overlay {
+    position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(5,5,8,.9) 0%, transparent 50%);
+    display:flex; align-items:flex-end; padding:1.5rem;
+    opacity:0; transition:.4s;
+  }
+  .g-item:hover .g-overlay { opacity:1; }
+  .g-label { font-weight:600; font-size:.9rem; color:var(--gold); }
+  .g-bg {
+    position:absolute; inset:0;
+    background: linear-gradient(135deg, #1a0828, #0a1628);
+  }
+
+  /* ---- REVIEWS ---- */
+  #reviews { background:var(--deep); }
+  .reviews-header { text-align:center; margin-bottom:4rem; }
+  .stars { color:var(--gold); font-size:1.2rem; margin-bottom:.75rem; }
+  .reviews-grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:1.5rem; max-width:1100px; margin:0 auto;
+  }
+  .review-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:20px; padding:2rem; position:relative;
+    transition:all .35s;
+  }
+  .review-card:hover {
+    border-color:rgba(245,200,66,.3);
+    box-shadow:0 10px 40px rgba(0,0,0,.4);
+  }
+  .review-quote {
+    font-size:3rem; line-height:1; color:var(--pink);
+    font-family:'Playfair Display',serif; opacity:.4;
+    position:absolute; top:1rem; right:1.5rem;
+  }
+  .review-text { color:#b8b3cc; line-height:1.75; font-size:.95rem; margin-bottom:1.5rem; }
+  .reviewer { display:flex; align-items:center; gap:.75rem; }
+  .reviewer-avatar {
+    width:42px; height:42px; border-radius:50%;
+    background:linear-gradient(135deg,var(--pink),var(--purple));
+    display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+  }
+  .reviewer-name { font-weight:600; font-size:.9rem; }
+  .reviewer-meta { font-size:.75rem; color:var(--muted); }
+
+  /* ---- LOCATION ---- */
+  #location { background:var(--black); }
+  .location-inner {
+    display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:start;
+    max-width:1200px; margin:0 auto;
+  }
+  .location-info { }
+  .contact-item {
+    display:flex; gap:1rem; align-items:flex-start;
+    padding:1.5rem; border:1px solid var(--border); border-radius:16px;
+    background:var(--card); margin-bottom:1rem; transition:.3s;
+  }
+  .contact-item:hover { border-color:rgba(245,200,66,.3); }
+  .contact-icon { font-size:1.5rem; flex-shrink:0; }
+  .contact-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--pink); margin-bottom:.25rem; }
+  .contact-val { font-weight:500; color:var(--white); }
+  .wa-btn {
+    display:flex; align-items:center; justify-content:center; gap:.75rem;
+    background:linear-gradient(135deg,#25D366,#128C7E);
+    color:white; text-decoration:none; padding:16px 32px;
+    border-radius:50px; font-weight:700; font-size:1rem;
+    margin-top:2rem; transition:all .35s;
+    box-shadow:0 0 30px rgba(37,211,102,.3);
+  }
+  .wa-btn:hover { transform:translateY(-3px); box-shadow:0 0 50px rgba(37,211,102,.4); }
+  .map-box {
+    border-radius:24px; overflow:hidden;
+    border:1px solid var(--border);
+    background: var(--card);
+    height:400px;
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:1rem;
+  }
+  .map-pin { font-size:4rem; }
+  .map-addr { text-align:center; color:var(--muted); font-size:.9rem; padding:0 2rem; }
+  .map-link {
+    display:inline-flex; align-items:center; gap:.5rem;
+    color:var(--gold); font-size:.85rem; text-decoration:none;
+    border:1px solid rgba(245,200,66,.3); border-radius:50px; padding:8px 18px;
+    transition:.3s;
+  }
+  .map-link:hover { background:rgba(245,200,66,.08); }
+
+  /* ---- FOOTER ---- */
+  footer {
+    background: var(--deep); border-top:1px solid var(--border);
+    padding:4rem 5% 2rem; text-align:center;
+  }
+  .footer-logo {
+    font-family:'Playfair Display',serif; font-size:2rem; font-weight:900;
+    background:linear-gradient(135deg,var(--gold),var(--pink));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:.5rem;
+  }
+  .footer-sub { color:var(--muted); font-size:.85rem; margin-bottom:2rem; }
+  .footer-links { display:flex; gap:2rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem; }
+  .footer-links a { color:var(--muted); text-decoration:none; font-size:.85rem; transition:.3s; }
+  .footer-links a:hover { color:var(--gold); }
+  .footer-copy { color:#3d3a50; font-size:.75rem; }
+
+  /* ---- FLOAT WA ---- */
+  #float-wa {
+    position:fixed; bottom:2rem; right:2rem; z-index:200;
+    width:58px; height:58px; border-radius:50%;
+    background:linear-gradient(135deg,#25D366,#128C7E);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem; text-decoration:none; cursor:none;
+    box-shadow:0 0 30px rgba(37,211,102,.4);
+    animation: pulse 2s infinite;
+    transition:transform .3s;
+  }
+  #float-wa:hover { transform:scale(1.1); }
+  #back-top {
+    position:fixed; bottom:2rem; left:2rem; z-index:200;
+    width:46px; height:46px; border-radius:50%;
+    background:var(--card); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--gold); font-size:1.2rem; cursor:none;
+    opacity:0; pointer-events:none; transition:all .3s;
+    text-decoration:none;
+  }
+  #back-top.visible { opacity:1; pointer-events:all; }
+  #back-top:hover { background:rgba(245,200,66,.1); transform:translateY(-3px); }
+
+  /* ---- ANIMATIONS ---- */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(30px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity:0; } to { opacity:1; }
+  }
+  @keyframes scrollPulse {
+    0%,100% { opacity:1; } 50% { opacity:.3; }
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow:0 0 30px rgba(37,211,102,.4); }
+    50%      { box-shadow:0 0 50px rgba(37,211,102,.6); }
+  }
+  @keyframes float {
+    0%,100% { transform:translateY(0); }
+    50%     { transform:translateY(-12px); }
+  }
+  @keyframes rotateSlow {
+    from { transform:rotate(0deg); } to { transform:rotate(360deg); }
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width:900px) {
+    .story-inner, .location-inner { grid-template-columns:1fr; gap:3rem; }
+    .story-visual { aspect-ratio:16/9; }
+    nav .nav-links, nav .nav-cta { display:none; }
+    .hamburger { display:flex; }
+    .gallery-grid { grid-template-columns:1fr 1fr; }
+    .g-item:nth-child(1) { grid-column:1/3; }
+    .g-item:nth-child(4) { grid-column:1/3; }
+  }
+  @media (max-width:600px) {
+    section { padding:70px 5%; }
+    .gallery-grid { grid-template-columns:1fr; }
+    .g-item:nth-child(1), .g-item:nth-child(4) { grid-column:1; }
+    .hero-btns { flex-direction:column; align-items:center; }
+    .stat-num { font-size:1.8rem; }
+  }
+
+  /* ---- DECORATIVE ---- */
+  .orb {
+    position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none;
+  }
+  .divider {
+    width:60px; height:3px;
+    background:linear-gradient(90deg,var(--pink),var(--gold));
+    border-radius:2px; margin:1.25rem 0;
+  }
+  .marquee-wrap { overflow:hidden; padding:2rem 0; background:var(--deep); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .marquee-track {
+    display:flex; gap:3rem; width:max-content;
+    animation: marquee 20s linear infinite;
+  }
+  .marquee-item { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--muted); white-space:nowrap; display:flex; align-items:center; gap:1rem; }
+  .marquee-dot { width:6px; height:6px; border-radius:50%; background:var(--gold); }
+  @keyframes marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">🐼 Panda Food Bus</div>
+  <ul class="nav-links">
+    <li><a href="#story">Story</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#meals">Meals</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+    <li><a href="#location">Visit Us</a></li>
+  </ul>
+  <a href="https://wa.me/918059701606" class="nav-cta">Order Now</a>
+  <div class="hamburger" onclick="toggleMenu(this)">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="orb" style="width:400px;height:400px;background:rgba(255,45,120,.12);top:-100px;right:-100px;animation:float 8s ease-in-out infinite;"></div>
+  <div class="orb" style="width:300px;height:300px;background:rgba(124,58,237,.1);bottom:0;left:-80px;animation:float 10s ease-in-out infinite reverse;"></div>
+
+  <div style="position:relative;z-index:2;">
+    <div class="hero-badge">Rohini Sector 24 · Delhi</div>
+    <h1 class="hero-h1">Not Just a Food Bus —<br><em>It's a Vibe on Wheels</em></h1>
+    <p class="hero-sub">Experience street food like never before.<br>Bold flavours. Iconic pink bus. Unforgettable moments.</p>
+    <div class="hero-btns">
+      <a href="https://wa.me/918059701606" class="btn-primary">
+        <span>💬</span> Order on WhatsApp
+      </a>
+      <a href="#menu" class="btn-outline">
+        <span>🍕</span> Explore Menu
+      </a>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee">
+    <div class="marquee-item">🍕 Exclusive Pizzas <span class="marquee-dot"></span></div>
+    <div class="marquee-item">☕ Premium Coffee <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🍔 Gourmet Burgers <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🥤 Signature Shakes <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🌯 Fresh Wraps <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🍝 Italian Pasta <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🧃 Exotic Mocktails <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🐼 Not Just Food — A Vibe <span class="marquee-dot"></span></div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item">🍕 Exclusive Pizzas <span class="marquee-dot"></span></div>
+    <div class="marquee-item">☕ Premium Coffee <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🍔 Gourmet Burgers <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🥤 Signature Shakes <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🌯 Fresh Wraps <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🍝 Italian Pasta <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🧃 Exotic Mocktails <span class="marquee-dot"></span></div>
+    <div class="marquee-item">🐼 Not Just Food — A Vibe <span class="marquee-dot"></span></div>
+  </div>
+</div>
+
+<!-- STORY -->
+<section id="story">
+  <div class="story-inner reveal">
+    <div class="story-visual">
+      <div class="g-bg" style="background:linear-gradient(135deg,#1a0828,#0a1030);"></div>
+      <div class="story-panda-emoji" style="animation:float 4s ease-in-out infinite;">🐼</div>
+      <div class="story-frame"></div>
+      <div class="story-tag">"A Luxurious Taste Experience"</div>
+    </div>
+    <div class="story-text">
+      <span class="section-label">Our Story</span>
+      <div class="divider"></div>
+      <h2 class="section-title">Rooted in the Vibrant<br><span>Elegance of Delhi</span></h2>
+      <p>Panda Food Bus blends taste, aesthetics, and experience into one unforgettable journey. Located in Rohini Sector 24, it is not just food — it's a vibe.</p>
+      <p>Every creation is freshly crafted under the highest standards of quality, hygiene, and excellence. From the iconic pink bus to every bite on your plate, we believe food should look as good as it tastes.</p>
+      <div class="story-stats">
+        <div class="stat reveal">
+          <div class="stat-num">500+</div>
+          <div class="stat-label">Happy Pandas</div>
+        </div>
+        <div class="stat reveal">
+          <div class="stat-num">40+</div>
+          <div class="stat-label">Menu Items</div>
+        </div>
+        <div class="stat reveal">
+          <div class="stat-num">4.8★</div>
+          <div class="stat-label">Google Rating</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section id="menu">
+  <div class="menu-header reveal">
+    <span class="section-label">Full Menu</span>
+    <div class="divider" style="margin:1rem auto;"></div>
+    <h2 class="section-title">A Menu Built to<br><span>Blow Your Mind</span></h2>
+    <p class="section-sub">Every item crafted with care. Filter by category to find your craving.</p>
+  </div>
+
+  <div class="menu-tabs" id="tabs">
+    <button class="tab-btn active" data-cat="coffee">☕ Coffee</button>
+    <button class="tab-btn" data-cat="shakes">🥤 Shakes</button>
+    <button class="tab-btn" data-cat="mocktails">🍹 Mocktails</button>
+    <button class="tab-btn" data-cat="burgers">🍔 Burgers</button>
+    <button class="tab-btn" data-cat="wraps">🌯 Wraps</button>
+    <button class="tab-btn" data-cat="pasta">🍝 Pasta</button>
+    <button class="tab-btn" data-cat="pizza">🍕 Pizza</button>
+    <button class="tab-btn" data-cat="snacks">🍟 Snacks</button>
+    <button class="tab-btn" data-cat="garlic">🥖 Garlic Bread</button>
+    <button class="tab-btn" data-cat="maggie">🍜 Maggie</button>
+  </div>
+
+  <div class="menu-grid" id="menuGrid">
+
+    <!-- COFFEE -->
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">☕</span><div class="card-name">Blended Coffee</div><div class="card-price">₹49</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">☕</span><div class="card-name">Hazelnut Blended Coffee</div><div class="card-price">₹59</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">☕</span><div class="card-name">Caramel Blended Coffee</div><div class="card-price">₹65</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">☕</span><div class="card-name">Chocolate Blended Coffee</div><div class="card-price">₹69</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">☕</span><div class="card-name">Irish Blended Coffee</div><div class="card-price">₹69</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">🧋</span><div class="card-name">Cafe Frappe</div><div class="card-price">₹89</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">🧋</span><div class="card-name">Panda's Special Cold Coffee</div><div class="card-price">₹129</div><span class="card-badge">⭐ Special</span></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">🧋</span><div class="card-name">Caramel Frappe</div><div class="card-price">₹99</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">🧋</span><div class="card-name">Dreamy Hazelnut Frappe</div><div class="card-price">₹109</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">🧋</span><div class="card-name">Brownie Frappe</div><div class="card-price">₹125</div></div>
+    <div class="menu-card active-cat" data-cat="coffee"><span class="card-icon">🧋</span><div class="card-name">French Vanilla Latte</div><div class="card-price">₹99</div></div>
+
+    <!-- SHAKES -->
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🍓</span><div class="card-name">Strawberry Blast</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🍌</span><div class="card-name">Caramel Banana Fusion</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🍫</span><div class="card-name">Kit Kat Cruncher</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🍪</span><div class="card-name">Oreo Crush</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🍦</span><div class="card-name">Vanilla Dream</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🫧</span><div class="card-name">Panda's Bubble Gum Blast</div><div class="card-price">₹119</div><span class="card-badge">🐼 Signature</span></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🍫</span><div class="card-name">Brownie Bliss</div><div class="card-price">₹119</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🧈</span><div class="card-name">Butterscotch Crave</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🫐</span><div class="card-name">Black Currant Splash</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🍍</span><div class="card-name">Pineapple Delight</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="shakes"><span class="card-icon">🫐</span><div class="card-name">Blueberry Breeze</div><div class="card-price">₹119</div></div>
+
+    <!-- MOCKTAILS -->
+    <div class="menu-card" data-cat="mocktails"><span class="card-icon">💙</span><div class="card-name">Blue Lagoon</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="mocktails"><span class="card-icon">🌿</span><div class="card-name">Virgin Mojito</div><div class="card-price">₹89</div></div>
+    <div class="menu-card" data-cat="mocktails"><span class="card-icon">🫧</span><div class="card-name">Bubblegum Mojito</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="mocktails"><span class="card-icon">🫐</span><div class="card-name">Blue Berry Mojito</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="mocktails"><span class="card-icon">🍉</span><div class="card-name">Water Melon Mojito</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="mocktails"><span class="card-icon">🍏</span><div class="card-name">Green Apple Mojito</div><div class="card-price">₹109</div></div>
+
+    <!-- BURGERS -->
+    <div class="menu-card" data-cat="burgers"><span class="card-icon">🍔</span><div class="card-name">Crunchy Aloo Tikki Burger</div><div class="card-price">₹59</div></div>
+    <div class="menu-card" data-cat="burgers"><span class="card-icon">🍔</span><div class="card-name">Veggie Delight Burger</div><div class="card-price">₹69</div></div>
+    <div class="menu-card" data-cat="burgers"><span class="card-icon">🧀</span><div class="card-name">Cheese Burst Burger</div><div class="card-price">₹79</div></div>
+    <div class="menu-card" data-cat="burgers"><span class="card-icon">🌶️</span><div class="card-name">Spicy Paneer Zing Burger</div><div class="card-price">₹109</div></div>
+    <div class="menu-card" data-cat="burgers"><span class="card-icon">👑</span><div class="card-name">Panda's Maharaja Burger</div><div class="card-price">₹135</div><span class="card-badge">👑 Premium</span></div>
+    <div class="menu-card" data-cat="burgers"><span class="card-icon">🍔</span><div class="card-name">Double Aloo Tikki Burger</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="burgers"><span class="card-icon">🧈</span><div class="card-name">Makhani Magic Burger</div><div class="card-price">₹79</div></div>
+
+    <!-- WRAPS -->
+    <div class="menu-card" data-cat="wraps"><span class="card-icon">🌯</span><div class="card-name">Fresh Veggie Wrap</div><div class="card-price">₹89</div></div>
+    <div class="menu-card" data-cat="wraps"><span class="card-icon">🌯</span><div class="card-name">Tandoori Paneer Wrap</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="wraps"><span class="card-icon">🌯</span><div class="card-name">Spicy Aloo Tikki Wrap</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="wraps"><span class="card-icon">🌽</span><div class="card-name">Crunchy Corn Wrap</div><div class="card-price">₹99</div></div>
+    <div class="menu-card" data-cat="wraps"><span class="card-icon">🌶️</span><div class="card-name">Zesty Mexican Wrap</div><div class="card-price">₹109</div></div>
+    <div class="menu-card" data-cat="wraps"><span class="card-icon">🧀</span><div class="card-name">Crispy Paneer Delight Wrap</div><div class="card-price">₹119</div></div>
+
+    <!-- PASTA -->
+    <div class="menu-card" data-cat="pasta"><span class="card-icon">🍝</span><div class="card-name">Tangy Red Sauce Pasta</div><div class="card-price">₹129</div></div>
+    <div class="menu-card" data-cat="pasta"><span class="card-icon">🍝</span><div class="card-name">Creamy White Sauce Pasta</div><div class="card-price">₹145</div></div>
+    <div class="menu-card" data-cat="pasta"><span class="card-icon">🔥</span><div class="card-name">Smoky Tandoori Pasta</div><div class="card-price">₹145</div></div>
+    <div class="menu-card" data-cat="pasta"><span class="card-icon">🧈</span><div class="card-name">Makhani Style Pasta</div><div class="card-price">₹149</div></div>
+    <div class="menu-card" data-cat="pasta"><span class="card-icon">🌈</span><div class="card-name">Mixed Flavor Pasta</div><div class="card-price">₹159</div><span class="card-badge">⭐ Best Seller</span></div>
+
+    <!-- PIZZA -->
+    <div class="menu-card" data-cat="pizza"><span class="card-icon">🍕</span><div class="card-name">Classic Margherita (M/L)</div><div class="card-price">₹159/₹289</div></div>
+    <div class="menu-card" data-cat="pizza"><span class="card-icon">🍕</span><div class="card-name">Rich Makhani Pizza</div><div class="card-price">₹179/₹299</div></div>
+    <div class="menu-card" data-cat="pizza"><span class="card-icon">🔥</span><div class="card-name">Tandoori Flavor Pizza</div><div class="card-price">₹179/₹299</div></div>
+    <div class="menu-card" data-cat="pizza"><span class="card-icon">🌾</span><div class="card-name">Farm Fresh Harvest Pizza</div><div class="card-price">₹199/₹299</div></div>
+    <div class="menu-card" data-cat="pizza"><span class="card-icon">🌶️</span><div class="card-name">Spicy Peri Peri Pizza</div><div class="card-price">₹179/₹299</div></div>
+    <div class="menu-card" data-cat="pizza"><span class="card-icon">🇲🇽</span><div class="card-name">Mexican Fiesta Pizza</div><div class="card-price">₹249/₹349</div><span class="card-badge">🧀 Cheese Burst</span></div>
+    <div class="menu-card" data-cat="pizza"><span class="card-icon">🌽</span><div class="card-name">Corn Pizza (R/M)</div><div class="card-price">₹79/₹149</div></div>
+    <div class="menu-card" data-cat="pizza"><span class="card-icon">🧅</span><div class="card-name">Onion + Paneer Pizza</div><div class="card-price">₹109/₹159/₹289</div></div>
+
+    <!-- SNACKS -->
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🍟</span><div class="card-name">Crunchy Classic Fries</div><div class="card-price">₹89</div></div>
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🧀</span><div class="card-name">Cheesy Melt Fries</div><div class="card-price">₹110</div></div>
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🌶️</span><div class="card-name">Spicy Masala Fries</div><div class="card-price">₹89</div></div>
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🌶️</span><div class="card-name">Zesty Peri Peri Fries</div><div class="card-price">₹89</div></div>
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🍟</span><div class="card-name">Ultimate Loaded Fries</div><div class="card-price">₹119</div><span class="card-badge">⭐ Must Try</span></div>
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🌮</span><div class="card-name">Crunchy Veg Nachos</div><div class="card-price">₹109</div></div>
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🧀</span><div class="card-name">Cheesey Veg Nachos</div><div class="card-price">₹119</div></div>
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🌶️</span><div class="card-name">Chilli Cheese Nachos</div><div class="card-price">₹119</div></div>
+    <div class="menu-card" data-cat="snacks"><span class="card-icon">🌮</span><div class="card-name">Ultimate Loaded Nachos</div><div class="card-price">₹129</div></div>
+
+    <!-- GARLIC BREAD -->
+    <div class="menu-card" data-cat="garlic"><span class="card-icon">🥖</span><div class="card-name">Plain Garlic Bread</div><div class="card-price">₹109</div></div>
+    <div class="menu-card" data-cat="garlic"><span class="card-icon">🥖</span><div class="card-name">Garlic Bread Stuffed Bliss</div><div class="card-price">₹149</div></div>
+    <div class="menu-card" data-cat="garlic"><span class="card-icon">🧀</span><div class="card-name">Paneer-Loaded Garlic Bread</div><div class="card-price">₹159</div></div>
+    <div class="menu-card" data-cat="garlic"><span class="card-icon">🧀</span><div class="card-name">Cheesy Garlic Bread Sticks</div><div class="card-price">₹139</div></div>
+
+    <!-- MAGGIE -->
+    <div class="menu-card" data-cat="maggie"><span class="card-icon">🍜</span><div class="card-name">Plain Maggie</div><div class="card-price">₹59</div></div>
+    <div class="menu-card" data-cat="maggie"><span class="card-icon">🌶️</span><div class="card-name">Double Masala Maggie</div><div class="card-price">₹69</div></div>
+    <div class="menu-card" data-cat="maggie"><span class="card-icon">🥦</span><div class="card-name">Vegetable Maggie</div><div class="card-price">₹69</div></div>
+    <div class="menu-card" data-cat="maggie"><span class="card-icon">🧀</span><div class="card-name">Cheese and Butter Maggie</div><div class="card-price">₹79</div></div>
+    <div class="menu-card" data-cat="maggie"><span class="card-icon">🔥</span><div class="card-name">Tandoori Maggie</div><div class="card-price">₹79</div></div>
+
+  </div>
+</section>
+
+<!-- MEALS -->
+<section id="meals">
+  <div class="meals-header reveal">
+    <span class="section-label">Signature Combos</span>
+    <div class="divider" style="margin:1rem auto;"></div>
+    <h2 class="section-title">Panda's <span>Signature Meals</span></h2>
+    <p class="section-sub" style="margin:0 auto; margin-top:.75rem;">Our handcrafted meal deals — the most loved combos at Panda Food Bus.</p>
+  </div>
+  <div class="meals-grid">
+    <div class="meal-card reveal" style="animation-delay:.1s">
+      <div class="meal-glow" style="background:var(--pink);"></div>
+      <span class="meal-emoji">🌯</span>
+      <div class="meal-name">Panda's Meal 1</div>
+      <div class="meal-desc">2 Fresh Veggie Wraps + 2 Cafe Frappe — The perfect duo for a refreshing, filling experience.</div>
+      <div class="meal-price">₹299</div>
+      <div class="meal-tag">🔥 Best Value</div>
+    </div>
+    <div class="meal-card reveal" style="animation-delay:.2s">
+      <div class="meal-glow" style="background:var(--gold);"></div>
+      <span class="meal-emoji">🍔</span>
+      <div class="meal-name">Panda's Meal 2</div>
+      <div class="meal-desc">Burger + Fries + Coca Cola — A classic trio that never disappoints. Street food heaven.</div>
+      <div class="meal-price">₹99</div>
+      <div class="meal-tag">⚡ Quickest Deal</div>
+    </div>
+    <div class="meal-card reveal" style="animation-delay:.3s">
+      <div class="meal-glow" style="background:var(--purple);"></div>
+      <span class="meal-emoji">🍕</span>
+      <div class="meal-name">Panda's Meal 3</div>
+      <div class="meal-desc">Pizza + Fries + Coca Cola — The ultimate comfort combo for pizza lovers on the go.</div>
+      <div class="meal-price">₹159</div>
+      <div class="meal-tag">🍕 Pizza Special</div>
+    </div>
+    <div class="meal-card reveal" style="animation-delay:.4s">
+      <div class="meal-glow" style="background:var(--gold);"></div>
+      <span class="meal-emoji">👨‍👩‍👧‍👦</span>
+      <div class="meal-name">Panda's Family Meal</div>
+      <div class="meal-desc">1 Farm Fresh Large Pizza + 4 Fresh-n-Crispy Vegwich + 3 Coke — A feast built for the whole squad.</div>
+      <div class="meal-price">₹450</div>
+      <div class="meal-tag">👨‍👩‍👧‍👦 For The Gang</div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="gallery-header reveal">
+    <span class="section-label">Gallery</span>
+    <div class="divider" style="margin:1rem auto;"></div>
+    <h2 class="section-title">The Panda <span>Aesthetic</span></h2>
+    <p class="section-sub" style="margin:0 auto; margin-top:.75rem;">Where every corner is a photo moment and every bite is Instagram-worthy.</p>
+  </div>
+  <div class="gallery-grid reveal">
+    <div class="g-item">
+      <div class="g-inner" style="background:linear-gradient(135deg,#2d0a2e,#1a0018);">
+        <div class="g-bg"></div>
+        <div class="g-emoji">🐼🚌</div>
+        <div class="g-overlay"><div class="g-label">The Iconic Pink Bus</div></div>
+      </div>
+    </div>
+    <div class="g-item">
+      <div class="g-inner" style="background:linear-gradient(135deg,#0a1f0a,#0d1a0d);">
+        <div class="g-emoji">🍕</div>
+        <div class="g-overlay"><div class="g-label">Gourmet Pizzas</div></div>
+      </div>
+    </div>
+    <div class="g-item">
+      <div class="g-inner" style="background:linear-gradient(135deg,#1a0a08,#2d1208);">
+        <div class="g-emoji">☕</div>
+        <div class="g-overlay"><div class="g-label">Artisan Coffee</div></div>
+      </div>
+    </div>
+    <div class="g-item">
+      <div class="g-inner" style="background:linear-gradient(135deg,#0a1028,#0d1840);">
+        <div class="g-emoji">🥤🍔🍟</div>
+        <div class="g-overlay"><div class="g-label">Combo Combos</div></div>
+      </div>
+    </div>
+    <div class="g-item">
+      <div class="g-inner" style="background:linear-gradient(135deg,#1a0a1a,#280a28);">
+        <div class="g-emoji">🌯</div>
+        <div class="g-overlay"><div class="g-label">Fresh Wraps</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+  <div class="reviews-header reveal">
+    <span class="section-label">Google Reviews</span>
+    <div class="divider" style="margin:1rem auto;"></div>
+    <h2 class="section-title">What Our <span>Pandas Say</span></h2>
+    <div class="stars" style="margin-top:1rem;">★★★★★</div>
+    <p class="section-sub" style="margin:0 auto;">4.8 out of 5 · Based on Google Reviews</p>
+  </div>
+  <div class="reviews-grid reveal">
+    <div class="review-card">
+      <div class="review-quote">"</div>
+      <div class="stars">★★★★★</div>
+      <p class="review-text">Honestly the best food bus I've ever visited in Delhi. The pink bus itself is so aesthetic and the food quality is outstanding. The Brownie Frappe is absolutely divine!</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">😄</div>
+        <div>
+          <div class="reviewer-name">Priya Sharma</div>
+          <div class="reviewer-meta">Google Review · Local Guide</div>
+        </div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-quote">"</div>
+      <div class="stars">★★★★★</div>
+      <p class="review-text">Panda Food Bus is a vibe! The Mexican Fiesta Pizza with cheese burst is insane. Great ambiance near Rithala station. My go-to spot after college every single day!</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">🧑</div>
+        <div>
+          <div class="reviewer-name">Rahul Verma</div>
+          <div class="reviewer-meta">Google Review · 3 photos</div>
+        </div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-quote">"</div>
+      <div class="stars">★★★★½</div>
+      <p class="review-text">The Panda Family Meal is incredible value. Huge pizza, 4 sandwiches and 3 cokes for ₹450 — tried so many places, nothing beats this combo. Super hygienic and fresh!</p>
+      <div class="reviewer">
+        <div class="reviewer-avatar">👩</div>
+        <div>
+          <div class="reviewer-name">Anjali Gupta</div>
+          <div class="reviewer-meta">Google Review · Regular Customer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCATION -->
+<section id="location">
+  <div class="location-inner reveal">
+    <div class="location-info">
+      <span class="section-label">Find Us</span>
+      <div class="divider"></div>
+      <h2 class="section-title">Visit the<br><span>Pink Bus</span></h2>
+      <p style="color:var(--muted);margin-top:1rem;margin-bottom:2rem;">We're parked and ready. Come experience the vibe in person — the food tastes even better when you're here.</p>
+
+      <div class="contact-item">
+        <div class="contact-icon">📍</div>
+        <div>
+          <div class="contact-label">Location</div>
+          <div class="contact-val">Rohini Sector 24, near Rithala Metro Station, Delhi</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">📞</div>
+        <div>
+          <div class="contact-label">Phone / WhatsApp</div>
+          <div class="contact-val">+91 80597 01606</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">📧</div>
+        <div>
+          <div class="contact-label">Email</div>
+          <div class="contact-val">pandafoodbus06@gmail.com</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">🏢</div>
+        <div>
+          <div class="contact-label">Franchise Enquiry</div>
+          <div class="contact-val">8059701606 · 8295701606 · 9812812616</div>
+        </div>
+      </div>
+
+      <a href="https://wa.me/918059701606" class="wa-btn">
+        <span>💬</span> Chat on WhatsApp
+      </a>
+    </div>
+
+    <div class="map-box">
+      <div class="map-pin" style="animation:float 3s ease-in-out infinite;">📍</div>
+      <div style="font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--gold); text-align:center;">Panda Food Bus</div>
+      <div class="map-addr">Rohini Sector 24, near Rithala Metro Station, Delhi</div>
+      <a href="https://maps.google.com/?q=Rohini+Sector+24+Rithala+Metro+Station+Delhi" target="_blank" class="map-link">
+        🗺️ Open in Google Maps
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🐼 Panda Food Bus</div>
+  <p class="footer-sub">Not Just a Food Bus — It's a Vibe on Wheels</p>
+  <div class="footer-links">
+    <a href="#hero">Home</a>
+    <a href="#story">Story</a>
+    <a href="#menu">Menu</a>
+    <a href="#meals">Meals</a>
+    <a href="#reviews">Reviews</a>
+    <a href="#location">Visit Us</a>
+    <a href="https://www.instagram.com/pandafoodbus" target="_blank">Instagram</a>
+  </div>
+  <p class="footer-copy">© 2024 Panda Food Bus · Rohini Sector 24, Delhi · All Rights Reserved</p>
+</footer>
+
+<!-- FLOATING ELEMENTS -->
+<a id="float-wa" href="https://wa.me/918059701606" title="Order on WhatsApp">💬</a>
+<a id="back-top" href="#hero" title="Back to top">↑</a>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  });
+  document.querySelectorAll('a,button,.menu-card,.meal-card,.review-card,.g-item,.stat').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(2)';
+      ring.style.transform = 'translate(-50%,-50%) scale(1.5)';
+      ring.style.borderColor = 'var(--pink)';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+      ring.style.transform = 'translate(-50%,-50%) scale(1)';
+      ring.style.borderColor = 'var(--gold)';
+    });
+  });
+
+  // Navbar
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+    document.getElementById('back-top').classList.toggle('visible', window.scrollY > 400);
+  });
+
+  // Menu tabs
+  document.getElementById('tabs').addEventListener('click', e => {
+    if (!e.target.matches('.tab-btn')) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    const cat = e.target.dataset.cat;
+    document.querySelectorAll('.menu-card').forEach(c => {
+      c.classList.toggle('active-cat', c.dataset.cat === cat);
+    });
+  });
+
+  // Reveal on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Hamburger
+  function toggleMenu(el) {
+    el.classList.toggle('open');
+  }
+
+  // Parallax hero
+  window.addEventListener('scroll', () => {
+    const hero = document.getElementById('hero');
+    const y = window.scrollY;
+    hero.querySelector('.hero-bg').style.transform = `translateY(${y * 0.3}px)`;
+  });
+</script>
+</body>
+</html>
